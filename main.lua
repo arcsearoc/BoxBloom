@@ -25,11 +25,8 @@ function BloomEffect:createShaders()
     -- 提取高亮区域的shader
     self.extractShader = loadShaderFromFile("shader-glsl/extract_highlights.glsl")
     
-    -- 水平模糊shader
-    self.horizontalBlurShader = loadShaderFromFile("shader-glsl/horizontal_blur.glsl")
-    
-    -- 垂直模糊shader
-    self.verticalBlurShader = loadShaderFromFile("shader-glsl/vertical_blur.glsl")
+    -- 盒型滤波shader (替代原来的水平和垂直模糊)
+    self.boxFilterShader = loadShaderFromFile("shader-glsl/box_filter_blur.glsl")
     
     -- 合并效果shader
     self.combineShader = loadShaderFromFile("shader-glsl/combine_effect.glsl")
@@ -38,12 +35,11 @@ end
 -- 更新shader参数
 function BloomEffect:updateShaderParams()
     self.extractShader:send("threshold", self.threshold)
-    self.horizontalBlurShader:send("blurRadius", self.blurRadius)
-    self.verticalBlurShader:send("blurRadius", self.blurRadius)
+    self.boxFilterShader:send("blurRadius", self.blurRadius)
     self.combineShader:send("intensity", self.intensity)
 end
 
--- 生成Bloom效果的主函数（使用shader）
+-- 生成Bloom效果的主函数（使用盒型滤波shader）
 function BloomEffect:generateBloom(originalImage)
     self:updateShaderParams()
     
@@ -59,32 +55,25 @@ function BloomEffect:generateBloom(originalImage)
     love.graphics.draw(originalImage)
     love.graphics.setShader()
     
-    -- 2. 应用水平模糊
+    -- 2. 应用盒型滤波（一次性完成模糊，不需要分水平和垂直两步）
     love.graphics.setCanvas(canvas2)
-    love.graphics.setShader(self.horizontalBlurShader)
-    self.horizontalBlurShader:send("textureSize", {width, height})
+    love.graphics.setShader(self.boxFilterShader)
+    self.boxFilterShader:send("textureSize", {width, height})
     love.graphics.draw(canvas1)
     love.graphics.setShader()
     
-    -- 3. 应用垂直模糊
+    -- 3. 与原图合并
     love.graphics.setCanvas(canvas1)
-    love.graphics.setShader(self.verticalBlurShader)
-    self.verticalBlurShader:send("textureSize", {width, height})
-    love.graphics.draw(canvas2)
-    love.graphics.setShader()
-    
-    -- 4. 与原图合并
-    love.graphics.setCanvas(canvas2)
     love.graphics.setShader(self.combineShader)
     self.combineShader:send("original", originalImage)
-    love.graphics.draw(canvas1)
+    love.graphics.draw(canvas2)
     love.graphics.setShader()
     
     -- 恢复画布
     love.graphics.setCanvas()
     
     -- 返回处理结果
-    return canvas2
+    return canvas1
 end
 
 -- 主程序逻辑
