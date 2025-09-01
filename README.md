@@ -2,6 +2,8 @@
 
 一个轻量级的Love2D演示项目，展示了使用盒型滤波（Box Filters）实现的泛光（Bloom）效果。
 
+![本地路径](demo.jpg "Demo")
+
 ## 项目说明
 
 本项目实现了基于盒型滤波的高效模糊算法，相比传统的高斯模糊，具有以下优势：
@@ -75,5 +77,6 @@ sigma基于模糊半径计算，控制权重的分布
 ## 论文出处
 
 本项目基于以下论文实现：
+
 [The Power of Box Filters: Real-time Approximation to Large Convolution Kernel by Box-filtered Image Pyramid](https://www.researchgate.net/publication/337301359_The_Power_of_Box_Filters_Real-time_Approximation_to_Large_Convolution_Kernel_by_Box-filtered_Image_Pyramid)
 
